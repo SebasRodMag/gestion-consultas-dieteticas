@@ -6,6 +6,9 @@ RUN apt-get update
 # Instalamos las librerías necesarias
 RUN apt-get install -y libonig-dev zlib1g-dev libpng-dev git zip unzip libzip-dev
 
+#Instala el cliente de MySQL.
+RUN apt-get install -y default-mysql-client
+
 # Instalamos las extensiones de PHP necesarias
 RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 

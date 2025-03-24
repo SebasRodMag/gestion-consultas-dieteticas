@@ -1,10 +1,9 @@
-version: '3.8'
 services:
   app:
     build:
       context: ./backend
       args:
-        APP_KEY: "${APP_KEY}"
+        APP_KEY: "base64:pDV/aTiuOdyqIbKJ2DhfBQ=="
     container_name: gestion-consultas-backend
     ports:
       - "8000:80"
@@ -46,10 +45,8 @@ services:
     ports:
       - "3307:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=gestion_consulta_dietetica
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=
       - MYSQL_ROOT_HOST=%
     volumes:
       - db_data:/var/lib/mysql
