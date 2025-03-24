@@ -21,6 +21,9 @@ RUN rm -rf *
 # Creamos un nuevo proyecto de Laravel
 RUN composer create-project --prefer-dist laravel/laravel .
 
+# Copiamos el archivo de configuración de Laravel
+COPY .env.example .env
+
 # Establecemos la APP_KEY como un argumento de construcción
 ARG APP_KEY
 RUN sed -i "s/^APP_KEY=.*$/APP_KEY=${APP_KEY}/" .env
@@ -41,7 +44,7 @@ COPY ./apache/vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN a2dissite 000-default && a2ensite 000-default
 RUN service apache2 restart
 
-# Copiamos el archivo de configuración de Laravel
-COPY .env.example .env
+# Establecer la variable de entorno APP_KEY
+ENV APP_KEY=${APP_KEY}
 
 EXPOSE 80
