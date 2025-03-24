@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: ./backend
+      args:
+        APP_KEY: "${APP_KEY}"
+    container_name: gestion-consultas-backend
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      - APP_NAME=GestionConsultas
+      - APP_ENV=local
+      - APP_KEY=i/yEisYgtBNProOhqfpcswTqXIUq4t0ICHFBy9rJ4QQ=
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=gestion_consulta_dietetica
+      - DB_USERNAME=root
+      - DB_PASSWORD=
+      - APP_CIPHER=aes-256-gcm
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  web:
+    build: ./frontend
+    container_name: gestion-consultas-frontend
+    ports:
+      - "4200:80"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+  db:
+    build: .
+    container_name: gestion-consultas-db
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_DATABASE=gestion_consulta_dietetica
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=
+      - MYSQL_ROOT_HOST=%
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
