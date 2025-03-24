@@ -16,7 +16,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 WORKDIR /var/www/html
 
 # Removemos cualquier contenido existente
-RUN rm -rf *
+RUN rm -rf ./*
 
 # Creamos un nuevo proyecto de Laravel
 RUN composer create-project --prefer-dist laravel/laravel .
@@ -24,9 +24,11 @@ RUN composer create-project --prefer-dist laravel/laravel .
 # Copiamos el archivo de configuración de Laravel
 COPY .env.example .env
 
-# Establecemos la APP_KEY como un argumento de construcción
-ARG APP_KEY
-RUN sed -i "s/^APP_KEY=.*$/APP_KEY=${APP_KEY}/" .env
+# Vaciar el archivo .env
+RUN > .env
+
+# Generar la clave de cifrado y pasarla al archivo .env
+RUN php artisan key:generate --show --no-interaction | sed 's/^/APP_KEY=/' > .env
 
 # Limpiamos la caché
 RUN php artisan config:clear
