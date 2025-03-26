@@ -32,27 +32,6 @@ CREATE TABLE PACIENTE (
     FOREIGN KEY (id_usuario) REFERENCES USUARIOS(id_usuario) ON DELETE CASCADE
 );
 
--- Restricción para evitar solapamiento entre PACIENTE y ESPECIALISTA
-CREATE TRIGGER before_insert_paciente
-BEFORE INSERT ON PACIENTE
-FOR EACH ROW
-BEGIN
-    IF EXISTS (SELECT 1 FROM ESPECIALISTA WHERE id_usuario = NEW.id_usuario) THEN
-        SIGNAL SQLSTATE '45000' 
-        SET MESSAGE_TEXT = 'El usuario ya está registrado como especialista.';
-    END IF;
-END;
-
-CREATE TRIGGER antes_insertar_especialista
-BEFORE INSERT ON ESPECIALISTA
-FOR EACH ROW
-BEGIN
-    IF EXISTS (SELECT 1 FROM PACIENTE WHERE id_usuario = NEW.id_usuario) THEN
-        SIGNAL SQLSTATE '45000' 
-        SET MESSAGE_TEXT = 'El usuario ya está registrado como paciente.';
-    END IF;
-END;
-
 -- Tabla HISTORIAL_MEDICO
 CREATE TABLE HISTORIAL_MEDICO (
     id_historial INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,3 +64,24 @@ CREATE TABLE CONSULTA (
     FOREIGN KEY (id_especialista) REFERENCES ESPECIALISTA(id_especialista) ON DELETE CASCADE,
     FOREIGN KEY (id_paciente) REFERENCES PACIENTE(id_paciente) ON DELETE CASCADE
 );
+
+-- Restricción para evitar solapamiento entre PACIENTE y ESPECIALISTA
+CREATE TRIGGER before_insert_paciente
+BEFORE INSERT ON PACIENTE
+FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT 1 FROM ESPECIALISTA WHERE id_usuario = NEW.id_usuario) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'El usuario ya está registrado como especialista.';
+    END IF;
+END;
+
+CREATE TRIGGER antes_insertar_especialista
+BEFORE INSERT ON ESPECIALISTA
+FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT 1 FROM PACIENTE WHERE id_usuario = NEW.id_usuario) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'El usuario ya está registrado como paciente.';
+    END IF;
+END;

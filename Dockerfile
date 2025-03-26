@@ -7,7 +7,7 @@ ENV MYSQL_DATABASE=gestion_consulta_dietetica
 #ENV MYSQL_PASSWORD=
 
 # Copiamos el script de la base de datos para inicializarla
-COPY database.sql /docker-entrypoint-initdb.d/
+#COPY database.sql /docker-entrypoint-initdb.d/
 
 # Exponemos el puerto 3306 para acceder a MySQL
 EXPOSE 3306
