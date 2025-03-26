@@ -24,4 +24,15 @@ class Especialista extends Model
         return $this->hasMany(Consulta::class, 'id_especialista');
     }
 
+    //Se acceder a fecha de creación y actualización a través de Usuario
+    public function getFechaCreacion()
+    {
+        return $this->usuario->fecha_creacion;
+    }
+
+    public function getFechaActualizacion()
+    {
+        return $this->usuario->fecha_actualizacion;
+    }
+
 }

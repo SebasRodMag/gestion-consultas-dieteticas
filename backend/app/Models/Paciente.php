@@ -28,4 +28,15 @@ class Paciente extends Model
     public function consulta(){
         return $this->hasMany(Consulta::class, 'id_paciente');
     }
+
+    //Se acceder a fecha de creación y actualización a través de Usuario
+    public function getFechaCreacion()
+    {
+        return $this->usuario->fecha_creacion;
+    }
+
+    public function getFechaActualizacion()
+    {
+        return $this->usuario->fecha_actualizacion;
+    }
 }
