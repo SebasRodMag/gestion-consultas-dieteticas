@@ -10,7 +10,9 @@ CREATE TABLE USUARIOS (
     email VARCHAR(100) UNIQUE NOT NULL,
     fecha_nacimiento DATE NOT NULL,
     telefono VARCHAR(15),
-    rol ENUM('paciente', 'especialista', 'usuario') DEFAULT 'usuario'
+    rol ENUM('paciente', 'especialista', 'usuario', 'administrador') DEFAULT 'usuario',
+    fecha_creacion DATE NOT NULL,
+    fecha_actualizacion DATE
 );
 
 -- Tabla ESPECIALISTA
@@ -56,6 +58,7 @@ CREATE TABLE HISTORIAL_MEDICO (
     id_historial INT AUTO_INCREMENT PRIMARY KEY,
     id_paciente INT NOT NULL,
     descripcion TEXT,
+    fecha_hora_ultima_modificacion DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_paciente) REFERENCES PACIENTE(id_paciente) ON DELETE CASCADE
 );
 
@@ -66,6 +69,7 @@ CREATE TABLE DOCUMENTOS (
     nombre_archivo VARCHAR(255) NOT NULL,
     ruta_archivo TEXT NOT NULL,
     fecha_hora_subida DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_hora_ultima_modificacion DATETIME NULL,
     FOREIGN KEY (id_historial) REFERENCES HISTORIAL_MEDICO(id_historial) ON DELETE CASCADE
 );
 
@@ -76,13 +80,8 @@ CREATE TABLE CONSULTA (
     id_paciente INT NOT NULL,
     tipo_consulta ENUM('presencial', 'telemática') NOT NULL,
     fecha_hora_consulta DATETIME NOT NULL,
+    estado ENUM('pendiente', 'realizada', 'cancelada') DEFAULT 'pendiente',
+    comentario TEXT DEFAULT NULL,
     FOREIGN KEY (id_especialista) REFERENCES ESPECIALISTA(id_especialista) ON DELETE CASCADE,
     FOREIGN KEY (id_paciente) REFERENCES PACIENTE(id_paciente) ON DELETE CASCADE
 );
-
-ALTER TABLE CONSULTA 
-ADD COLUMN estado ENUM('pendiente', 'realizada', 'cancelada') DEFAULT 'pendiente',
-ADD COLUMN comentario TEXT DEFAULT NULL;
-
-ALTER TABLE USUARIOS 
-MODIFY COLUMN rol ENUM('paciente', 'especialista', 'usuario', 'administrador') DEFAULT 'usuario';
