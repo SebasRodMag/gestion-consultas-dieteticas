@@ -1,35 +1,30 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule, provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { RouterModule, Routes } from '@angular/router';
-
-
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { LandingPageComponent } from './landing-page/landing-page.component';
-import { LoginComponent } from './login/login.component'; // Asegúrate de crear este componente
-import { RegisterComponent } from './register/register.component'; // Asegúrate de crear este componente
-
-const routes: Routes = [
-  { path: '', component: LandingPageComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent }
-];
+import { LandingPageComponent } from './components/landing-page/landing-page.component';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+import { HeaderComponent } from './shared/components/header/header.component';
+import { FooterComponent } from './shared/components/footer/footer.component';
+import { NavComponent } from './shared/components/nav/nav.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LandingPageComponent
+    LandingPageComponent,
+    HeaderComponent,
+    FooterComponent,
+    NavComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
-    RouterModule.forRoot(routes)
+    AppRoutingModule
   ],
   providers: [
     provideClientHydration(withEventReplay())
   ],
-  bootstrap: [AppComponent],
-  exports: [RouterModule]
+  bootstrap: [AppComponent]// Esto también suele hacerse en el AppRoutingModule
 })
 export class AppModule { }
