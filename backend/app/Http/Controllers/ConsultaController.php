@@ -75,4 +75,37 @@ class ConsultaController extends Controller
 
         return response()->json($pago, 201);
     }
+
+    public function cancelar($id)
+{
+    // Obtener la consulta por ID
+    $consulta = Consulta::find($id);
+
+    // Verificar si la consulta existe
+    if (!$consulta) {
+        return response()->json(['message' => 'Consulta no encontrada'], 404);
+    }
+
+    // Cambiar el estado de la consulta a 'cancelada'
+    $consulta->estado = 'cancelada';
+    $consulta->save();
+
+    return response()->json(['message' => 'Consulta cancelada con éxito'], 200);
+}
+
+public function videollamada($id)
+{
+    // Obtener la consulta por ID
+    $consulta = Consulta::find($id);
+
+    // Verificar si la consulta existe
+    if (!$consulta) {
+        return response()->json(['message' => 'Consulta no encontrada'], 404);
+    }
+
+    // Obtener el enlace de la videollamada (esto puede estar relacionado con una API como Jitsi)
+    $linkVideollamada = $consulta->link_videollamada;
+
+    return response()->json(['link' => $linkVideollamada], 200);
+}
 }
