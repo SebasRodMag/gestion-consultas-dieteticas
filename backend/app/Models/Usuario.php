@@ -2,30 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Usuario extends Model
 {
     use HasFactory;
 
-    protected $table = 'USUARIOS';
-    protected $primaryKey = 'id_usuario';
-    public $timestamps = false; //Se desactiva el timestamps automáticos de Laravel
+    protected $table = 'usuarios';
 
-    //Se definir los nombres de las columnas de fecha
-    const CREATED_AT = 'fecha_creacion';
-    const UPDATED_AT = 'fecha_actualizacion';
+    protected $fillable = [
+        'nombre', 'apellidos', 'dni_usuario', 'email', 'fecha_nacimiento', 'telefono', 'rol', 'fecha_creacion', 'fecha_actualizacion'
+    ];
 
-    //relaciones:
+    // Relación uno a uno con Paciente
+    public function paciente()
+    {
+        return $this->hasOne(Paciente::class, 'id_usuario');
+    }
 
+    // Relación uno a uno con Especialista
     public function especialista()
     {
         return $this->hasOne(Especialista::class, 'id_usuario');
     }
 
-    public function paciente()
+    // Relación muchos a muchos con Consultas
+    public function consultas()
     {
-        return $this->hasOne(Paciente::class, 'id_usuario');
+        return $this->hasMany(Consulta::class, 'id_paciente');
     }
 }
