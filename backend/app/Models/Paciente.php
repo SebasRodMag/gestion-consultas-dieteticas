@@ -2,41 +2,46 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Paciente extends Model
 {
     use HasFactory;
 
-    protected $table = 'PACIENTE';
-    protected $primaryKey = 'id_paciente';
-    public $timestamps = false; //Se desactiva el timestamps automáticos de Laravel
+    protected $table = 'paciente';
 
-    //Se define la relación con Usuario
+    protected $fillable = [
+        'id_usuario', 'fecha_alta', 'fecha_baja'
+    ];
+
+    // Relación uno a uno con Usuario
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'id_usuario');
     }
 
-    //Se define la relación con HistorialMedico
-    public function historialMedico(){
-        return $this->hasMany(HistorialMedico::class, 'id_paciente');
-    }
-
-    //Se define la relación con Consulta
-    public function consulta(){
+    // Relación uno a muchos con Consultas
+    public function consultas()
+    {
         return $this->hasMany(Consulta::class, 'id_paciente');
     }
 
-    //Se acceder a fecha de creación y actualización a través de Usuario
-    public function getFechaCreacion()
+    // Relación uno a muchos con Pagos
+    public function pagos()
     {
-        return $this->usuario->fecha_creacion;
+        return $this->hasMany(Pago::class, 'id_paciente');
     }
 
-    public function getFechaActualizacion()
+    // Relación uno a muchos con Bonos
+    public function bonos()
     {
-        return $this->usuario->fecha_actualizacion;
+        return $this->hasMany(Bono::class, 'id_paciente');
+    }
+
+    // Relación uno a uno con Historial Médico
+    public function historial()
+    {
+        return $this->hasOne(HistorialMedico::class, 'id_paciente');
     }
 }

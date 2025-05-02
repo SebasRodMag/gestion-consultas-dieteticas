@@ -4,14 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::create('USUARIOS', function (Blueprint $table) {
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('usuarios', function (Blueprint $table) {
             $table->id('id_usuario');
             $table->string('nombre', 100);
             $table->string('apellidos', 150);
@@ -20,14 +15,12 @@ return new class extends Migration
             $table->date('fecha_nacimiento');
             $table->string('telefono', 15)->nullable();
             $table->enum('rol', ['paciente', 'especialista', 'usuario', 'administrador'])->default('usuario');
+            $table->date('fecha_creacion');
+            $table->date('fecha_actualizacion')->nullable();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('USUARIOS');
+    public function down(): void {
+        Schema::dropIfExists('usuarios');
     }
 };
