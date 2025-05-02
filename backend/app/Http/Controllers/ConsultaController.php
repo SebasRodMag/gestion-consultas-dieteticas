@@ -24,10 +24,24 @@ class ConsultaController extends Controller
         return response()->json($consulta, 201);
     }
 
-    // Obtener todas las consultas
+    // Obtener todas las consultas (Incluso las eliminadas)
     public function index()
     {
         $consultas = Consulta::all();
+        return response()->json($consultas);
+    }
+
+    // Obtener todas las consultas eliminadas
+    public function indexEliminadas()
+    {
+        $consultas = Consulta::onlyTrashed()->get();
+        return response()->json($consultas);
+    }
+
+    // Obtener todas las consultas activas
+    public function indexActivos()
+    {
+        $consultas = Consulta::withTrashed()->get();
         return response()->json($consultas);
     }
 
@@ -54,6 +68,15 @@ class ConsultaController extends Controller
         $consulta->delete();
 
         return response()->json(['message' => 'Consulta eliminada']);
+    }
+
+    // Restaurar una consulta eliminada
+    public function restore($id)
+    {
+        $consulta = Consulta::withTrashed()->findOrFail($id);
+        $consulta->restore();
+
+        return response()->json(['message' => 'Consulta restaurada']);
     }
 
     // Realizar el pago de una consulta

@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('especialidad', 100);
 
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
+            $table->softDeletes();
         });
     }
 

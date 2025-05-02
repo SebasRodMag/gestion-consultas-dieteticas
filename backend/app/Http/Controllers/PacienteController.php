@@ -21,10 +21,24 @@ class PacienteController extends Controller
         return response()->json($paciente, 201);
     }
 
-    // Obtener todos los pacientes
+    // Obtener todos los pacientes (Incluso los eliminados)
     public function index()
     {
         $pacientes = Paciente::all();
+        return response()->json($pacientes);
+    }
+
+    // Obtener todos los pacientes eliminados
+    public function indexEliminados()
+    {
+        $pacientes = Paciente::onlyTrashed()->get();
+        return response()->json($pacientes);
+    }
+
+    // Obtener todos los pacientes activos
+    public function indexActivos()
+    {
+        $pacientes = Paciente::withTrashed()->get();
         return response()->json($pacientes);
     }
 
@@ -59,5 +73,14 @@ class PacienteController extends Controller
         $paciente->delete();
 
         return response()->json(['message' => 'Paciente eliminado']);
+    }
+
+    // Restaurar un paciente eliminado
+    public function restore($id)
+    {
+        $paciente = Paciente::withTrashed()->findOrFail($id);
+        $paciente->restore();
+
+        return response()->json(['message' => 'Paciente restaurado']);
     }
 }

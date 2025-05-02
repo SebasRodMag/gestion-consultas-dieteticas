@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->enum('estado', ['pendiente', 'activo', 'finalizado'])->default('pendiente');
 
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
+            $table->softDeletes();
         });
     }
 

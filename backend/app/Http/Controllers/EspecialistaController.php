@@ -20,10 +20,24 @@ class EspecialistaController extends Controller
         return response()->json($especialista, 201);
     }
 
-    // Obtener todos los especialistas
+    // Obtener todos los especialistas (Incluso los eliminados)
     public function index()
     {
         $especialistas = Especialista::all();
+        return response()->json($especialistas);
+    }
+
+    // Obtener todos los especialistas eliminados
+    public function indexEliminados()
+    {
+        $especialistas = Especialista::onlyTrashed()->get();
+        return response()->json($especialistas);
+    }
+
+    // Obtener todos los especialistas activos
+    public function indexActivos()
+    {
+        $especialistas = Especialista::withTrashed()->get();
         return response()->json($especialistas);
     }
 
@@ -51,4 +65,15 @@ class EspecialistaController extends Controller
 
         return response()->json(['message' => 'Especialista eliminado']);
     }
+
+    // Restaurar un especialista eliminado
+    public function restore($id)
+    {
+        $especialista = Especialista::withTrashed()->findOrFail($id);
+        $especialista->restore();
+
+        return response()->json(['message' => 'Especialista restaurado']);
+    }
+
+    
 }

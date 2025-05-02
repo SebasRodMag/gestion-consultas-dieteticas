@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UsuarioController extends Controller
 {
     // Crear un nuevo usuario
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre' => 'required|string',
             'apellidos' => 'required|string',
             'dni_usuario' => 'required|string|unique:usuarios',
@@ -18,23 +19,42 @@ class UsuarioController extends Controller
             'fecha_nacimiento' => 'required|date',
             'telefono' => 'required|string',
             'rol' => 'required|in:paciente,especialista',
+            'password' => 'required|string|min:6',
         ]);
 
         $usuario = Usuario::create([
             'nombre' => $validated['nombre'],
+            'apellidos' => $validated['apellidos'],
+            'dni_usuario' => $validated['dni_usuario'],
             'email' => $validated['email'],
+            'fecha_nacimiento' => $validated['fecha_nacimiento'],
+            'telefono' => $validated['telefono'],
             'password' => bcrypt($validated['password']),
         ]);
-
-        $usuario->assignRole('paciente');
+        
+        $usuario->assignRole($validated['rol']);
 
         return response()->json(['message' => 'Usuario creado'], 201);
     }
 
-    // Obtener todos los usuarios
+    // Obtener todos los usuarios(Incluso los eliminados)
     public function index()
     {
         $usuarios = Usuario::all();
+        return response()->json($usuarios);
+    }
+
+    // Obtener todos los usuarios eliminados
+    public function indexEliminados()
+    {
+        $usuarios = Usuario::onlyTrashed()->get();
+        return response()->json($usuarios);
+    }
+
+    // Obtener todos los usuarios activos
+    public function indexActivos()
+    {
+        $usuarios = Usuario::withTrashed()->get();
         return response()->json($usuarios);
     }
 
@@ -68,7 +88,7 @@ class UsuarioController extends Controller
         ]);
 
         if ($request->has('rol')) {
-            $user->syncRoles($request->rol); // Cambia su rol si se especifica
+            $usuario->syncRoles($request->rol);
         }
 
         return response()->json(['message' => 'Usuario actualizado'], 200);
@@ -81,5 +101,12 @@ class UsuarioController extends Controller
         $usuario->delete();
 
         return response()->json(['message' => 'Usuario eliminado']);
+    }
+
+    public function restore($id)
+    {
+        $modelo = Modelo::withTrashed()->findOrFail($id);
+        $modelo->restore();
+        return response()->json(['message' => 'Registro restaurado']);
     }
 }
