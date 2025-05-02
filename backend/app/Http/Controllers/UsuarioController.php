@@ -32,7 +32,7 @@ class UsuarioController extends Controller
             'password' => bcrypt($validated['password']),
         ]);
         
-        $usuario->assignRole($validated['rol']);
+        $usuario->assignRole('paciente');
 
         return response()->json(['message' => 'Usuario creado'], 201);
     }
