@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_usuario')->unique();
             $table->date('fecha_alta');
             $table->date('fecha_baja')->nullable();
+            $table->enum('estado', ['pendiente', 'activo', 'finalizado'])->default('pendiente');
 
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
         });

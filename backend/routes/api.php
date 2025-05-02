@@ -7,6 +7,10 @@ use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\EspecialistaController;
 use App\Http\Controllers\ConsultaController;
 
+Route::middleware(['role:especialista'])->group(function () {
+    Route::get('/pacientes', [PacienteController::class, 'index']);
+});
+
 Route::prefix('usuarios')->group(function () {
     Route::get('/', [UsuarioController::class, 'index']); // Obtener todos los usuarios
     Route::post('/', [UsuarioController::class, 'store']); // Crear un nuevo usuario

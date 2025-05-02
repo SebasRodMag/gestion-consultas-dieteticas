@@ -20,9 +20,15 @@ class UsuarioController extends Controller
             'rol' => 'required|in:paciente,especialista',
         ]);
 
-        $usuario = Usuario::create($request->all());
+        $usuario = Usuario::create([
+            'nombre' => $validated['nombre'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+        ]);
 
-        return response()->json($usuario, 201);
+        $usuario->assignRole('paciente');
+
+        return response()->json(['message' => 'Usuario creado'], 201);
     }
 
     // Obtener todos los usuarios
@@ -49,13 +55,23 @@ class UsuarioController extends Controller
             'email' => 'sometimes|required|email|unique:usuarios,email,' . $id,
             'fecha_nacimiento' => 'sometimes|required|date',
             'telefono' => 'sometimes|required|string',
-            'rol' => 'sometimes|required|in:paciente,especialista',
         ]);
 
         $usuario = Usuario::findOrFail($id);
-        $usuario->update($request->all());
+        $usuario->update([
+            'nombre' => $request->nombre,
+            'email' => $request->email,
+            'apellidos' => $request->apellidos,
+            'dni_usuario' => $request->dni_usuario,
+            'fecha_nacimiento' => $request->fecha_nacimiento,
+            'telefono' => $request->telefono,
+        ]);
 
-        return response()->json($usuario);
+        if ($request->has('rol')) {
+            $user->syncRoles($request->rol); // Cambia su rol si se especifica
+        }
+
+        return response()->json(['message' => 'Usuario actualizado'], 200);
     }
 
     // Eliminar un usuario
