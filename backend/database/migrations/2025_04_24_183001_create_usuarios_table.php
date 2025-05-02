@@ -15,8 +15,7 @@ return new class extends Migration {
             $table->date('fecha_nacimiento');
             $table->string('telefono', 15)->nullable();
             $table->enum('rol', ['paciente', 'especialista', 'usuario', 'administrador'])->default('usuario');
-            $table->date('fecha_creacion');
-            $table->date('fecha_actualizacion')->nullable();
+            $table->timestamps();
         });
     }
 

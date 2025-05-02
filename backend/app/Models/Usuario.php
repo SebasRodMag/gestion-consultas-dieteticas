@@ -16,10 +16,11 @@ class Usuario extends Model
     protected $primaryKey = 'id_usuario';
 
     protected $fillable = [
-        'nombre', 'apellidos', 'dni_usuario', 'email', 'fecha_nacimiento', 'telefono', 'rol', 'fecha_creacion', 'fecha_actualizacion'
+        'nombre', 'apellidos', 'email', 'dni_usuario', 'fecha_nacimiento', 'telefono', 'password', 'rol',
     ];
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     // Relación uno a uno con Paciente
@@ -38,5 +39,18 @@ class Usuario extends Model
     public function consultas()
     {
         return $this->hasMany(Consulta::class, 'id_paciente');
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }
