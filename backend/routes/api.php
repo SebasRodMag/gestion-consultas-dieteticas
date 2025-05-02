@@ -17,6 +17,8 @@ Route::prefix('usuarios')->group(function () {
     Route::get('{id}', [UsuarioController::class, 'show']); // Obtener un usuario específico
     Route::put('{id}', [UsuarioController::class, 'update']); // Actualizar un usuario
     Route::delete('{id}', [UsuarioController::class, 'destroy']); // Eliminar un usuario
+    Route::post('/usuarios/{id}/restore', [UsuarioController::class, 'restore']); // Restaurar un usuario eliminado
+    Route::get('/usuarios/trashed', [UsuarioController::class, 'indexEliminados']); // Obtener usuarios eliminados
 });
 
 Route::prefix('pacientes')->group(function () {
@@ -25,6 +27,8 @@ Route::prefix('pacientes')->group(function () {
     Route::get('{id}', [PacienteController::class, 'show']); // Obtener un paciente específico
     Route::put('{id}', [PacienteController::class, 'update']); // Actualizar un paciente
     Route::delete('{id}', [PacienteController::class, 'destroy']); // Eliminar un paciente
+    Route::post('/pacientes/{id}/restore', [PacienteController::class, 'restore']); // Restaurar un paciente eliminado
+    Route::get('/pacientes/trashed', [PacienteController::class, 'indexEliminados']); // Obtener pacientes eliminados
 
     // Rutas adicionales para obtener las consultas de un paciente
     Route::get('{id}/consultas', [PacienteController::class, 'consultas']); // Consultas de un paciente
@@ -36,6 +40,8 @@ Route::prefix('especialistas')->group(function () {
     Route::get('{id}', [EspecialistaController::class, 'show']); // Obtener un especialista específico
     Route::put('{id}', [EspecialistaController::class, 'update']); // Actualizar un especialista
     Route::delete('{id}', [EspecialistaController::class, 'destroy']); // Eliminar un especialista
+    Route::post('/especialistas/{id}/restore', [EspecialistaController::class, 'restore']); // Restaurar un especialista eliminado
+    Route::get('/especialistas/trashed', [EspecialistaController::class, 'indexEliminados']); // Obtener especialistas eliminados
 });
 
 Route::prefix('consultas')->group(function () {
