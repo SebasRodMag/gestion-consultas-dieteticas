@@ -11,10 +11,17 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_historial');
             $table->unsignedBigInteger('id_consulta')->nullable();
             $table->text('descripcion');
-            $table->dateTime('fecha_entrada')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('fecha_entrada')->useCurrent();
 
             $table->foreign('id_historial')->references('id_historial')->on('historial_medicos')->onDelete('cascade');
             $table->foreign('id_consulta')->references('id_consulta')->on('consultas')->onDelete('set null');
+            
+
+            $table->index(['id_historial', 'id_consulta']);
+            
+
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

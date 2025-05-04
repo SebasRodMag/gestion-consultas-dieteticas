@@ -8,11 +8,13 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('historial_medico', function (Blueprint $table) {
             $table->id('id_historial');
-            $table->unsignedBigInteger('id_paciente');
+            $table->unsignedBigInteger('id_paciente')->index();
             $table->text('descripcion')->nullable();
             $table->dateTime('fecha_hora_ultima_modificacion')->default(DB::raw('CURRENT_TIMESTAMP'));
 
             $table->foreign('id_paciente')->references('id_paciente')->on('pacientes')->onDelete('cascade');
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

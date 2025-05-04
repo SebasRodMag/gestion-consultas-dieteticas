@@ -23,7 +23,7 @@ class EspecialistaController extends Controller
         Log::create([
             'usuario_id' => auth()->id(),
             'accion' => 'Crear especialista',
-            'detalles' => "Especialista ID: {$especialista->id}"
+            'detalles' => "Especialista ID: {$especialista->id} - Especialidad: {$especialista->especialidad}"
         ]);
 
         return response()->json($especialista, 201);
@@ -71,6 +71,11 @@ class EspecialistaController extends Controller
         $especialista = Especialista::withTrashed()->findOrFail($id);
         $this->authorize('update', $especialista);
 
+        // Evitar que se actualicen especialistas eliminados
+        if ($especialista->trashed()) {
+            return response()->json(['message' => 'Especialista eliminado, no se puede actualizar'], 400);
+        }
+
         $request->validate([
             'especialidad' => 'sometimes|required|string',
         ]);
@@ -80,7 +85,7 @@ class EspecialistaController extends Controller
         Log::create([
             'usuario_id' => auth()->id(),
             'accion' => 'Actualizar especialista',
-            'detalles' => "Especialista ID: {$especialista->id}"
+            'detalles' => "Especialista ID: {$especialista->id} - Especialidad actualizada a: {$especialista->especialidad}"
         ]);
 
         return response()->json($especialista);
@@ -92,12 +97,17 @@ class EspecialistaController extends Controller
         $especialista = Especialista::findOrFail($id);
         $this->authorize('delete', $especialista);
 
+        // Eliminar solo si el especialista no está ya eliminado
+        if ($especialista->trashed()) {
+            return response()->json(['message' => 'Este especialista ya está eliminado'], 400);
+        }
+
         $especialista->delete();
 
         Log::create([
             'usuario_id' => auth()->id(),
             'accion' => 'Eliminar especialista',
-            'detalles' => "Especialista ID: {$especialista->id}"
+            'detalles' => "Especialista ID: {$especialista->id} - Especialidad: {$especialista->especialidad}"
         ]);
 
         return response()->json(['message' => 'Especialista eliminado']);
@@ -114,9 +124,10 @@ class EspecialistaController extends Controller
         Log::create([
             'usuario_id' => auth()->id(),
             'accion' => 'Restaurar especialista',
-            'detalles' => "Especialista ID: {$especialista->id}"
+            'detalles' => "Especialista ID: {$especialista->id} - Especialidad restaurada: {$especialista->especialidad}"
         ]);
 
         return response()->json(['message' => 'Especialista restaurado']);
     }
 }
+

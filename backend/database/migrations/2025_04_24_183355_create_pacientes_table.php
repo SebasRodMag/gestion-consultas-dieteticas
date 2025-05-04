@@ -9,9 +9,9 @@ return new class extends Migration {
         Schema::create('pacientes', function (Blueprint $table) {
             $table->id('id_paciente');
             $table->unsignedBigInteger('id_usuario')->unique();
-            $table->date('fecha_alta');
+            $table->date('fecha_alta')->index();
             $table->date('fecha_baja')->nullable();
-            $table->enum('estado', ['pendiente', 'activo', 'finalizado'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'activo', 'finalizado'])->default('pendiente')->index();
 
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
             $table->softDeletes();

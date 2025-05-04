@@ -10,7 +10,7 @@ class Especialista extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'especialista';
+    protected $table = 'especialistas';
 
     protected $fillable = [
         'id_usuario', 'especialidad'

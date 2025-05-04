@@ -10,7 +10,7 @@ class Paciente extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'paciente';
+    protected $table = 'pacientes';
 
     protected $dates = ['fecha_alta', 'fecha_baja', 'deleted_at'];
     //se castean automáticamente a objetos Carbon para trabajar más cómodamente con fechas

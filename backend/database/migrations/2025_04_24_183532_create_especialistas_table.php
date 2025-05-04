@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('especialistas', function (Blueprint $table) {
             $table->id('id_especialista');
             $table->unsignedBigInteger('id_usuario')->unique();
-            $table->string('especialidad', 100);
+            $table->string('especialidad', 100)->index();
 
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
             $table->softDeletes();

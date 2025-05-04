@@ -11,10 +11,14 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_paciente');
             $table->integer('total_consultas');
             $table->integer('consultas_utilizadas')->default(0);
-            $table->dateTime('fecha_compra')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('fecha_compra')->useCurrent();
             $table->dateTime('fecha_expiracion')->nullable();
 
             $table->foreign('id_paciente')->references('id_paciente')->on('pacientes')->onDelete('cascade');
+            $table->timestamps();
+            $table->softDeletes();
+            
+            $table->index('id_paciente');
         });
     }
 
