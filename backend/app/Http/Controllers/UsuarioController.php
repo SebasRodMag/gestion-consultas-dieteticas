@@ -3,11 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Usuario;
+use App\Models\Log;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class UsuarioController extends Controller
 {
+    // Listar todos los usuarios (activos y eliminados)
+    public function index()
+    {
+        $usuarios = Usuario::withTrashed()->paginate(10);
+        return response()->json($usuarios);
+    }
+
+    // Listar usuarios eliminados (solo soft-deleted)
+    public function indexEliminados()
+    {
+        $usuarios = Usuario::onlyTrashed()->paginate(10);
+        return response()->json($usuarios);
+    }
+
+    // Listar usuarios activos
+    public function indexActivos()
+    {
+        $usuarios = Usuario::paginate(10); // No incluye eliminados
+        return response()->json($usuarios);
+    }
+
     // Crear un nuevo usuario
     public function store(Request $request)
     {
@@ -31,43 +53,32 @@ class UsuarioController extends Controller
             'telefono' => $validated['telefono'],
             'password' => bcrypt($validated['password']),
         ]);
-        
-        $usuario->assignRole('paciente');
+
+        $usuario->assignRole($validated['rol']);
+
+        Log::create([
+            'usuario_id' => Auth::id(),
+            'accion' => 'Creación de usuario',
+            'descripcion' => "Usuario {$usuario->email} creado con rol {$validated['rol']}"
+        ]);
 
         return response()->json(['message' => 'Usuario creado'], 201);
     }
 
-    // Obtener todos los usuarios(Incluso los eliminados)
-    public function index()
-    {
-        $usuarios = Usuario::all();
-        return response()->json($usuarios);
-    }
-
-    // Obtener todos los usuarios eliminados
-    public function indexEliminados()
-    {
-        $usuarios = Usuario::onlyTrashed()->get();
-        return response()->json($usuarios);
-    }
-
-    // Obtener todos los usuarios activos
-    public function indexActivos()
-    {
-        $usuarios = Usuario::withTrashed()->get();
-        return response()->json($usuarios);
-    }
-
-    // Obtener un usuario específico
+    // Mostrar un usuario por ID
     public function show($id)
     {
-        $usuario = Usuario::findOrFail($id);
+        $usuario = Usuario::withTrashed()->findOrFail($id);
+        $this->authorize('view', $usuario);
         return response()->json($usuario);
     }
 
     // Actualizar un usuario
     public function update(Request $request, $id)
     {
+        $usuario = Usuario::withTrashed()->findOrFail($id);
+        $this->authorize('update', $usuario);
+
         $request->validate([
             'nombre' => 'sometimes|required|string',
             'apellidos' => 'sometimes|required|string',
@@ -75,38 +86,91 @@ class UsuarioController extends Controller
             'email' => 'sometimes|required|email|unique:usuarios,email,' . $id,
             'fecha_nacimiento' => 'sometimes|required|date',
             'telefono' => 'sometimes|required|string',
+            'rol' => 'sometimes|required|in:paciente,especialista',
         ]);
 
-        $usuario = Usuario::findOrFail($id);
-        $usuario->update([
-            'nombre' => $request->nombre,
-            'email' => $request->email,
-            'apellidos' => $request->apellidos,
-            'dni_usuario' => $request->dni_usuario,
-            'fecha_nacimiento' => $request->fecha_nacimiento,
-            'telefono' => $request->telefono,
-        ]);
+        $usuario->update($request->only([
+            'nombre', 'apellidos', 'dni_usuario', 'email', 'fecha_nacimiento', 'telefono'
+        ]));
 
-        if ($request->has('rol')) {
+        if ($request->filled('rol')) {
             $usuario->syncRoles($request->rol);
         }
 
-        return response()->json(['message' => 'Usuario actualizado'], 200);
+        Log::create([
+            'usuario_id' => Auth::id(),
+            'accion' => 'Actualización de usuario',
+            'descripcion' => "Usuario con ID {$id} actualizado"
+        ]);
+
+        return response()->json(['message' => 'Usuario actualizado']);
     }
 
-    // Eliminar un usuario
+    // Eliminar (soft delete)
     public function destroy($id)
     {
         $usuario = Usuario::findOrFail($id);
+        $this->authorize('delete', $usuario);
         $usuario->delete();
 
-        return response()->json(['message' => 'Usuario eliminado']);
+        Log::create([
+            'usuario_id' => Auth::id(),
+            'accion' => 'Eliminación de usuario',
+            'descripcion' => "Usuario con ID {$id} eliminado (soft delete)"
+        ]);
+
+        return response()->json(['message' => 'Usuario: ' . $$usuario->nombre . ' ' . $usuario->apellidos . ' eliminado.']);
     }
 
+    // Restaurar usuario eliminado
     public function restore($id)
     {
-        $modelo = Modelo::withTrashed()->findOrFail($id);
-        $modelo->restore();
-        return response()->json(['message' => 'Registro restaurado']);
+        $usuario = Usuario::withTrashed()->findOrFail($id);
+        $this->authorize('restore', $usuario);
+        if (!$usuario->trashed()) {
+            return response()->json(['message' => 'El usuario no está eliminado'], 400);
+        }
+
+        $usuario->restore();
+
+        Log::create([
+            'usuario_id' => Auth::id(),
+            'accion' => 'Restauración de usuario',
+            'descripcion' => "Usuario con ID {$id} restaurado"
+        ]);
+
+        return response()->json(['message' => 'Usuario: ' . $$usuario->nombre . ' ' . $usuario->apellidos . ' restaurado.']);
+    }
+
+    // Perfil del usuario autenticado
+    public function miPerfil()
+    {
+        return response()->json(Auth::user());
+    }
+
+    // Actualizar perfil autenticado
+    public function actualizarPerfil(Request $request)
+    {
+        $usuario = Auth::user();
+
+        $request->validate([
+            'nombre' => 'sometimes|required|string',
+            'apellidos' => 'sometimes|required|string',
+            'email' => 'sometimes|required|email|unique:usuarios,email,' . $usuario->id,
+            'telefono' => 'sometimes|required|string',
+            'fecha_nacimiento' => 'sometimes|required|date',
+        ]);
+
+        $usuario->update($request->only([
+            'nombre', 'apellidos', 'email', 'telefono', 'fecha_nacimiento'
+        ]));
+
+        Log::create([
+            'usuario_id' => $usuario->id,
+            'accion' => 'Actualización de perfil',
+            'descripcion' => "Perfil del usuario actualizado"
+        ]);
+
+        return response()->json(['message' => 'Perfil actualizado', 'usuario' => $usuario]);
     }
 }

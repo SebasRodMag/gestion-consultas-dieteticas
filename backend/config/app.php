@@ -123,4 +123,15 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'providers' => [
+        /*
+        * Paquetes de Laravel
+        */
+        Illuminate\Auth\AuthServiceProvider::class,
+        // Otros proveedores...
+
+        // Registrar AuthServiceProvider manualmente
+        App\Providers\AuthServiceProvider::class,
+        ],
+
 ];

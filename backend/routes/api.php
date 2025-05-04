@@ -2,63 +2,97 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\PacienteController;
-use App\Http\Controllers\EspecialistaController;
-use App\Http\Controllers\ConsultaController;
+use App\Http\Controllers\{
+    UsuarioController,
+    PacienteController,
+    EspecialistaController,
+    ConsultaController,
+    HistorialMedicoController,
+    DocumentoController,
+    BonosController,
+    PagosController,
+    LogController,
+    VideollamadaController,
+    EntradaHistorialController
+};
 
-Route::middleware(['role:especialista'])->group(function () {
-    Route::get('/pacientes', [PacienteController::class, 'index']);
+// Rutas públicas (si las hubiera)
+
+// Rutas protegidas por autenticación Sanctum
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Rutas para administradores
+    Route::middleware('role:administrador')->group(function () {
+        Route::apiResources([
+            'usuarios' => UsuarioController::class,
+            'especialistas' => EspecialistaController::class,
+            'pacientes' => PacienteController::class,
+            'consultas' => ConsultaController::class,
+            'historialMedico' => HistorialMedicoController::class,
+            'documentos' => DocumentoController::class,
+            'bonos' => BonosController::class,
+            'pagos' => PagosController::class
+        ]);
+    });
+
+    // Rutas para especialistas
+    Route::middleware('role:especialista')->prefix('especialista')->group(function () {
+        Route::get('consultas/proximas', [ConsultaController::class, 'proximas']);
+        Route::get('pacientes', [EspecialistaController::class, 'misPacientes']);
+        Route::get('pacientes/{id}/historial', [HistorialMedicoController::class, 'verPorPaciente']);
+        Route::get('pacientes/{id}/documentos', [DocumentoController::class, 'documentosDePaciente']);
+        Route::get('pacientes/{id}/bono', [BonosController::class, 'verificarBono']);
+        Route::get('consultas/{id}/videollamada', [VideollamadaController::class, 'enlace']);
+        Route::post('historial/{id}/entrada', [EntradaHistorialController::class, 'store']);
+        Route::put('consultas/{id}/realizar', [ConsultaController::class, 'marcarComoRealizada']);
+        Route::post('pacientes/{id}/documentos', [DocumentoController::class, 'subir']);
+        Route::get('estadisticas', [EspecialistaController::class, 'estadisticas']);
+    });
+
+    // Rutas para pacientes
+    Route::middleware('role:paciente')->prefix('paciente')->group(function () {
+        Route::get('consultas', [ConsultaController::class, 'misConsultas']);
+        Route::post('consultas/inicial', [ConsultaController::class, 'solicitarInicial']);
+        Route::get('historial', [HistorialMedicoController::class, 'mio']);
+        Route::get('documentos', [DocumentoController::class, 'misDocumentos']);
+        Route::post('documentos', [DocumentoController::class, 'subir']);
+        Route::delete('documentos/{id}', [DocumentoController::class, 'eliminar']);
+        Route::get('bono', [BonosController::class, 'miBono']);
+        Route::post('bono/comprar', [BonosController::class, 'comprar']);
+        Route::get('perfil', [UsuarioController::class, 'miPerfil']);
+        Route::put('perfil', [UsuarioController::class, 'actualizarPerfil']);
+        Route::get('consultas/{id}/videollamada', [VideollamadaController::class, 'enlace']);
+        Route::patch('consultas/{id}/cancelar', [ConsultaController::class, 'cancelar']);
+    });
 });
 
-Route::prefix('usuarios')->group(function () {
-    Route::get('/', [UsuarioController::class, 'index']); // Obtener todos los usuarios
-    Route::post('/', [UsuarioController::class, 'store']); // Crear un nuevo usuario
-    Route::get('{id}', [UsuarioController::class, 'show']); // Obtener un usuario específico
-    Route::put('{id}', [UsuarioController::class, 'update']); // Actualizar un usuario
-    Route::delete('{id}', [UsuarioController::class, 'destroy']); // Eliminar un usuario
-    Route::post('/usuarios/{id}/restore', [UsuarioController::class, 'restore']); // Restaurar un usuario eliminado
-    Route::get('/usuarios/trashed', [UsuarioController::class, 'indexEliminados']); // Obtener usuarios eliminados
+// Rutas para recursos con soft deletes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('pacientes')->group(function () {
+        Route::post('{id}/restore', [PacienteController::class, 'restore']);
+        Route::get('trashed', [PacienteController::class, 'indexEliminados']);
+        Route::get('{id}/consultas', [PacienteController::class, 'consultas']);
+    });
+
+    Route::prefix('especialistas')->group(function () {
+        Route::post('{id}/restore', [EspecialistaController::class, 'restore']);
+        Route::get('trashed', [EspecialistaController::class, 'indexEliminados']);
+    });
 });
 
-Route::prefix('pacientes')->group(function () {
-    Route::get('/', [PacienteController::class, 'index']); // Obtener todos los pacientes
-    Route::post('/', [PacienteController::class, 'store']); // Crear un nuevo paciente
-    Route::get('{id}', [PacienteController::class, 'show']); // Obtener un paciente específico
-    Route::put('{id}', [PacienteController::class, 'update']); // Actualizar un paciente
-    Route::delete('{id}', [PacienteController::class, 'destroy']); // Eliminar un paciente
-    Route::post('/pacientes/{id}/restore', [PacienteController::class, 'restore']); // Restaurar un paciente eliminado
-    Route::get('/pacientes/trashed', [PacienteController::class, 'indexEliminados']); // Obtener pacientes eliminados
-
-    // Rutas adicionales para obtener las consultas de un paciente
-    Route::get('{id}/consultas', [PacienteController::class, 'consultas']); // Consultas de un paciente
+// Rutas específicas para consultas
+Route::middleware('auth:sanctum')->prefix('consultas')->group(function () {
+    Route::post('{id}/pagar', [ConsultaController::class, 'pagar']);
+    Route::patch('{id}/cancelar', [ConsultaController::class, 'cancelar']);
+    Route::get('{id}/videollamada', [ConsultaController::class, 'videollamada']);
 });
 
-Route::prefix('especialistas')->group(function () {
-    Route::get('/', [EspecialistaController::class, 'index']); // Obtener todos los especialistas
-    Route::post('/', [EspecialistaController::class, 'store']); // Crear un nuevo especialista
-    Route::get('{id}', [EspecialistaController::class, 'show']); // Obtener un especialista específico
-    Route::put('{id}', [EspecialistaController::class, 'update']); // Actualizar un especialista
-    Route::delete('{id}', [EspecialistaController::class, 'destroy']); // Eliminar un especialista
-    Route::post('/especialistas/{id}/restore', [EspecialistaController::class, 'restore']); // Restaurar un especialista eliminado
-    Route::get('/especialistas/trashed', [EspecialistaController::class, 'indexEliminados']); // Obtener especialistas eliminados
+// Rutas de logs (autenticación con token API, distinto a sanctum)
+Route::middleware('auth:api')->group(function () {
+    Route::resource('logs', LogController::class)->only(['index', 'store', 'show', 'destroy']);
 });
 
-Route::prefix('consultas')->group(function () {
-    Route::get('/', [ConsultaController::class, 'index']); // Obtener todas las consultas
-    Route::post('/', [ConsultaController::class, 'store']); // Crear una nueva consulta
-    Route::get('{id}', [ConsultaController::class, 'show']); // Obtener una consulta específica
-    Route::put('{id}', [ConsultaController::class, 'update']); // Actualizar una consulta
-    Route::delete('{id}', [ConsultaController::class, 'destroy']); // Eliminar una consulta
-
-    // Ruta para realizar el pago de una consulta
-    Route::post('{id}/pagar', [ConsultaController::class, 'pagar']); // Realizar el pago de una consulta
-    // Actualizar el estado de la consulta a 'cancelada'
-    Route::patch('{id}/cancelar', [ConsultaController::class, 'cancelar']); // Cancelar consulta
-    // Obtener link a la videollamada
-    Route::get('{id}/videollamada', [ConsultaController::class, 'videollamada']); // Obtener link videollamada
-});
-
+// Ruta para obtener usuario autenticado
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });

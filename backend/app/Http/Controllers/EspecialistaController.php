@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Especialista;
+use App\Models\Log;
 use Illuminate\Http\Request;
 
 class EspecialistaController extends Controller
@@ -10,58 +11,94 @@ class EspecialistaController extends Controller
     // Crear un nuevo especialista
     public function store(Request $request)
     {
+        $this->authorize('create', Especialista::class);
+
         $request->validate([
             'id_usuario' => 'required|exists:usuarios,id',
             'especialidad' => 'required|string',
         ]);
 
-        $especialista = Especialista::create($request->all());
+        $especialista = Especialista::create($request->only(['id_usuario', 'especialidad']));
+
+        Log::create([
+            'usuario_id' => auth()->id(),
+            'accion' => 'Crear especialista',
+            'detalles' => "Especialista ID: {$especialista->id}"
+        ]);
 
         return response()->json($especialista, 201);
     }
 
-    // Obtener todos los especialistas (Incluso los eliminados)
+    // Obtener todos los especialistas (paginado, incluso eliminados)
     public function index()
     {
-        $especialistas = Especialista::all();
+        $this->authorize('viewAny', Especialista::class);
+
+        $especialistas = Especialista::withTrashed()->paginate(10);
         return response()->json($especialistas);
     }
 
     // Obtener todos los especialistas eliminados
     public function indexEliminados()
     {
-        $especialistas = Especialista::onlyTrashed()->get();
+        $this->authorize('viewAny', Especialista::class);
+
+        $especialistas = Especialista::onlyTrashed()->paginate(10);
         return response()->json($especialistas);
     }
 
     // Obtener todos los especialistas activos
     public function indexActivos()
     {
-        $especialistas = Especialista::withTrashed()->get();
+        $this->authorize('viewAny', Especialista::class);
+
+        $especialistas = Especialista::whereNull('deleted_at')->paginate(10);
         return response()->json($especialistas);
     }
 
     // Obtener un especialista específico
     public function show($id)
     {
-        $especialista = Especialista::findOrFail($id);
+        $especialista = Especialista::withTrashed()->findOrFail($id);
+        $this->authorize('view', $especialista);
+
         return response()->json($especialista);
     }
 
     // Actualizar un especialista
     public function update(Request $request, $id)
     {
-        $especialista = Especialista::findOrFail($id);
-        $especialista->update($request->all());
+        $especialista = Especialista::withTrashed()->findOrFail($id);
+        $this->authorize('update', $especialista);
+
+        $request->validate([
+            'especialidad' => 'sometimes|required|string',
+        ]);
+
+        $especialista->update($request->only(['especialidad']));
+
+        Log::create([
+            'usuario_id' => auth()->id(),
+            'accion' => 'Actualizar especialista',
+            'detalles' => "Especialista ID: {$especialista->id}"
+        ]);
 
         return response()->json($especialista);
     }
 
-    // Eliminar un especialista
+    // Eliminar un especialista (soft delete)
     public function destroy($id)
     {
         $especialista = Especialista::findOrFail($id);
+        $this->authorize('delete', $especialista);
+
         $especialista->delete();
+
+        Log::create([
+            'usuario_id' => auth()->id(),
+            'accion' => 'Eliminar especialista',
+            'detalles' => "Especialista ID: {$especialista->id}"
+        ]);
 
         return response()->json(['message' => 'Especialista eliminado']);
     }
@@ -70,10 +107,16 @@ class EspecialistaController extends Controller
     public function restore($id)
     {
         $especialista = Especialista::withTrashed()->findOrFail($id);
+        $this->authorize('restore', $especialista);
+
         $especialista->restore();
+
+        Log::create([
+            'usuario_id' => auth()->id(),
+            'accion' => 'Restaurar especialista',
+            'detalles' => "Especialista ID: {$especialista->id}"
+        ]);
 
         return response()->json(['message' => 'Especialista restaurado']);
     }
-
-    
 }

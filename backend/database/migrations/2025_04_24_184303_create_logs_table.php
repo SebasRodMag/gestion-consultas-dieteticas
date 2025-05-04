@@ -12,7 +12,8 @@ return new class extends Migration {
             $table->string('accion', 255);
             $table->text('descripcion')->nullable();
             $table->dateTime('fecha_log')->default(DB::raw('CURRENT_TIMESTAMP'));
-
+            $table->string('tabla_afectada')->nullable()->after('descripcion');
+            $table->unsignedBigInteger('id_registro_afectado')->nullable()->after('tabla_afectada');
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('set null');
         });
     }

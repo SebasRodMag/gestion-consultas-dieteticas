@@ -12,6 +12,10 @@ class Paciente extends Model
 
     protected $table = 'paciente';
 
+    protected $dates = ['fecha_alta', 'fecha_baja', 'deleted_at'];
+    //se castean automáticamente a objetos Carbon para trabajar más cómodamente con fechas
+    //Esto permite usar $paciente->fecha_alta->format('d/m/Y'), comparar fechas fácilmente
+
     protected $fillable = [
         'id_usuario', 'fecha_alta', 'fecha_baja'
     ];
